@@ -62,7 +62,7 @@ function CandidatePage() {
 
   const navigate = useNavigate();
 
- function handleContinue() {
+function handleContinue() {
   if (
     !name ||
     !email ||
@@ -79,13 +79,24 @@ function CandidatePage() {
   sessionStorage.setItem("candidateEmail", email);
   sessionStorage.setItem("candidatePhone", phone);
   sessionStorage.setItem("candidateCountryCode", countryCode);
-  sessionStorage.setItem("previousEnglishTest", previousTest);
-  sessionStorage.setItem("interestedCourse", course);
-  sessionStorage.setItem("targetTest", test);
+
+  sessionStorage.setItem(
+    "previousEnglishTest",
+    previousTest
+  );
+
+  sessionStorage.setItem(
+    "interestedCourse",
+    course
+  );
+
+  sessionStorage.setItem(
+    "targetTest",
+    test
+  );
 
   navigate("/instructions");
 }
-
   return (
     <>
       <Header />
@@ -144,14 +155,14 @@ function CandidatePage() {
                 onChange={(e) => setCountryCode(e.target.value)}
                 className="border border-gray-300 px-4 py-3"
               >
-                {countries.map((country) => (
-                  <option
-                    key={country.code}
-                    value={country.code}
-                  >
-                    {country.code} {country.name}
-                  </option>
-                ))}
+               {countries.map((country) => (
+  <option
+    key={`${country.code}-${country.name}`}
+    value={country.code}
+  >
+    {country.code} {country.name}
+  </option>
+))}
               </select>
 
               <input
