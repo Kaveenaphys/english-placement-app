@@ -7,6 +7,7 @@ import AssessmentPage from "./pages/AssessmentPage";
 import ReadingPage from "./pages/ReadingPage";
 import ListeningPage from "./pages/ListeningPage";
 import ResultsPage from "./pages/ResultsPage";
+import AdminPage from "./pages/AdminPage";
 
 
 function App() {
@@ -48,6 +49,10 @@ function App() {
           path="/results"
           element={<ResultsPage />}
         />
+        <Route
+  path="/admin"
+  element={<AdminPage />}
+/>
 
       </Routes>
     </BrowserRouter>

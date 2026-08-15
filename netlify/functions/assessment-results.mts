@@ -32,8 +32,8 @@ export default async (req: Request) => {
   }
 
   // Check whether the logged-in user is an administrator
-  if (!user.roles.includes("admin")) {
-    return new Response(
+if (!user.roles?.includes("admin")) {
+        return new Response(
       JSON.stringify({
         error: "Administrator access required.",
       }),
