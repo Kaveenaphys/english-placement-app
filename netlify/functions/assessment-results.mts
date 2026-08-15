@@ -41,18 +41,22 @@ export default async (req: Request) => {
     );
 
     if (!response.ok) {
-      return new Response(
-        JSON.stringify({
-          error: "Unable to retrieve assessment submissions.",
-        }),
-        {
-          status: response.status,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  const errorText = await response.text();
+
+  return new Response(
+    JSON.stringify({
+      error: "Netlify API request failed.",
+      status: response.status,
+      details: errorText,
+    }),
+    {
+      status: response.status,
+      headers: {
+        "Content-Type": "application/json",
+      },
     }
+  );
+}
 
     const submissions = await response.json();
 
