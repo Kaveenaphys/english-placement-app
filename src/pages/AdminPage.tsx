@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import netlifyIdentity from "netlify-identity-widget";
+
 import Header from "../components/Header";
 
 function AdminPage() {
   const navigate = useNavigate();
 
-const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [loadingResults, setLoadingResults] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-  netlifyIdentity.init({
-  APIUrl:
-    "https://peaceful-fenglisu-53952e.netlify.app/.netlify/identity",
-});
+    netlifyIdentity.init({
+      APIUrl:
+        "https://peaceful-fenglisu-53952e.netlify.app/.netlify/identity",
+    });
 
     const currentUser = netlifyIdentity.currentUser();
 
@@ -31,6 +34,7 @@ const [user, setUser] = useState<any>(null);
 
     const handleLogout = () => {
       setUser(null);
+      setResults([]);
     };
 
     netlifyIdentity.on("login", handleLogin);
@@ -42,8 +46,9 @@ const [user, setUser] = useState<any>(null);
     };
   }, []);
 
-  async function testAdminAccess() {
-    setMessage("Checking administrator access...");
+  async function loadAssessmentData() {
+    setLoadingResults(true);
+    setError("");
 
     try {
       const response = await fetch(
@@ -53,24 +58,21 @@ const [user, setUser] = useState<any>(null);
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(
-          data.error || "Administrator access denied."
+        setError(
+          data.error ||
+            "Unable to retrieve assessment results."
         );
         return;
       }
 
-      setMessage(
-        `Access granted. ${data.length} assessment submission(s) found.`
-      );
+      setResults(Array.isArray(data) ? data : []);
     } catch {
-      setMessage(
+      setError(
         "Unable to connect to the assessment results system."
       );
+    } finally {
+      setLoadingResults(false);
     }
-  }
-
-  function handleLogin() {
-    netlifyIdentity.open("login");
   }
 
   async function handleLogout() {
@@ -78,12 +80,33 @@ const [user, setUser] = useState<any>(null);
     navigate("/");
   }
 
+  function getField(
+    submission: any,
+    fieldName: string
+  ) {
+    return submission?.data?.[fieldName] || "—";
+  }
+
+  function formatDate(dateString: string) {
+    if (!dateString) {
+      return "—";
+    }
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    return date.toLocaleDateString();
+  }
+
   if (loading) {
     return (
       <>
         <Header />
 
-        <main className="max-w-4xl mx-auto py-16 px-6">
+        <main className="max-w-5xl mx-auto py-16 px-6">
           <p className="text-gray-600">
             Loading...
           </p>
@@ -96,10 +119,10 @@ const [user, setUser] = useState<any>(null);
     <>
       <Header />
 
-      <main className="max-w-5xl mx-auto py-16 px-6">
+      <main className="max-w-7xl mx-auto py-12 px-6">
 
         {!user ? (
-          <div className="max-w-xl mx-auto text-center">
+          <div className="max-w-xl mx-auto text-center py-16">
 
             <p className="text-red-600 font-semibold">
               Administration
@@ -115,7 +138,9 @@ const [user, setUser] = useState<any>(null);
             </p>
 
             <button
-              onClick={handleLogin}
+              onClick={() =>
+                netlifyIdentity.open("login")
+              }
               className="mt-8 bg-red-600 text-white px-8 py-3 font-semibold hover:bg-red-700"
             >
               Admin Login
@@ -123,11 +148,13 @@ const [user, setUser] = useState<any>(null);
 
           </div>
         ) : (
-          <div>
+          <>
+            {/* Dashboard Header */}
 
-            <div className="flex justify-between items-center mb-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
 
               <div>
+
                 <p className="text-red-600 font-semibold">
                   Administration
                 </p>
@@ -139,43 +166,276 @@ const [user, setUser] = useState<any>(null);
                 <p className="text-gray-600 mt-2">
                   Logged in as {user.email}
                 </p>
+
               </div>
 
               <button
                 onClick={handleLogout}
-                className="border border-gray-300 px-5 py-3 font-semibold"
+                className="border border-gray-300 px-5 py-3 font-semibold hover:bg-gray-50"
               >
                 Log Out
               </button>
 
             </div>
 
-            <div className="border border-gray-200 p-8">
 
-              <h2 className="text-2xl font-bold">
-                Assessment Results
-              </h2>
+            {/* Summary */}
 
-              <p className="text-gray-600 mt-2">
-                Your administrator account is ready.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
-              <button
-                onClick={testAdminAccess}
-                className="mt-6 bg-red-600 text-white px-6 py-3 font-semibold"
-              >
-                Load Assessment Data
-              </button>
+              <div className="border border-gray-200 p-6">
 
-              {message && (
-                <p className="mt-6 text-gray-700">
-                  {message}
+                <p className="text-gray-500">
+                  Total Assessments
                 </p>
+
+                <p className="text-4xl font-bold mt-2">
+                  {results.length}
+                </p>
+
+              </div>
+
+
+              <div className="border border-gray-200 p-6">
+
+                <p className="text-gray-500">
+                  Latest Submission
+                </p>
+
+                <p className="text-xl font-bold mt-2">
+                  {results.length > 0
+                    ? formatDate(
+                        results[0].submitted_at ||
+                          results[0].created_at
+                      )
+                    : "—"}
+                </p>
+
+              </div>
+
+
+              <div className="border border-gray-200 p-6">
+
+                <p className="text-gray-500">
+                  Dashboard Status
+                </p>
+
+                <p className="text-xl font-bold text-green-600 mt-2">
+                  Secure
+                </p>
+
+              </div>
+
+            </div>
+
+
+            {/* Results Section */}
+
+            <div className="border border-gray-200">
+
+              <div className="p-6 border-b border-gray-200">
+
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                  <div>
+
+                    <h2 className="text-2xl font-bold">
+                      Assessment Results
+                    </h2>
+
+                    <p className="text-gray-600 mt-1">
+                      Candidate assessment submissions
+                    </p>
+
+                  </div>
+
+                  <button
+                    onClick={loadAssessmentData}
+                    disabled={loadingResults}
+                    className="bg-red-600 text-white px-6 py-3 font-semibold hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {loadingResults
+                      ? "Loading..."
+                      : "Refresh Results"}
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              {/* Error */}
+
+              {error && (
+                <div className="m-6 border border-red-200 bg-red-50 p-4 text-red-700">
+                  {error}
+                </div>
+              )}
+
+
+              {/* Empty state */}
+
+              {!loadingResults &&
+                !error &&
+                results.length === 0 && (
+                  <div className="p-10 text-center">
+
+                    <p className="text-gray-600">
+                      No assessment submissions loaded.
+                    </p>
+
+                    <button
+                      onClick={loadAssessmentData}
+                      className="mt-5 bg-red-600 text-white px-6 py-3 font-semibold"
+                    >
+                      Load Results
+                    </button>
+
+                  </div>
+                )}
+
+
+              {/* Results Table */}
+
+              {results.length > 0 && (
+                <div className="overflow-x-auto">
+
+                  <table className="w-full text-left">
+
+                    <thead>
+
+                      <tr className="border-b border-gray-200 bg-gray-50">
+
+                        <th className="px-6 py-4 font-semibold">
+                          Candidate
+                        </th>
+
+                        <th className="px-6 py-4 font-semibold">
+                          Email
+                        </th>
+
+                        <th className="px-6 py-4 font-semibold">
+                          Overall
+                        </th>
+
+                        <th className="px-6 py-4 font-semibold">
+                          Level
+                        </th>
+
+                        <th className="px-6 py-4 font-semibold">
+                          Course
+                        </th>
+
+                        <th className="px-6 py-4 font-semibold">
+                          Test
+                        </th>
+
+                        <th className="px-6 py-4 font-semibold">
+                          Submitted
+                        </th>
+
+                      </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                      {results.map(
+                        (submission, index) => (
+
+                          <tr
+                            key={
+                              submission.id ||
+                              index
+                            }
+                            className="border-b border-gray-100 hover:bg-gray-50"
+                          >
+
+                            <td className="px-6 py-4 font-semibold">
+
+                              {getField(
+                                submission,
+                                "candidateName"
+                              )}
+
+                            </td>
+
+
+                            <td className="px-6 py-4">
+
+                              {getField(
+                                submission,
+                                "candidateEmail"
+                              )}
+
+                            </td>
+
+
+                            <td className="px-6 py-4 font-semibold">
+
+                              {getField(
+                                submission,
+                                "percentage"
+                              )}
+
+                            </td>
+
+
+                            <td className="px-6 py-4">
+
+                              {getField(
+                                submission,
+                                "recommendedLevel"
+                              )}
+
+                            </td>
+
+
+                            <td className="px-6 py-4">
+
+                              {getField(
+                                submission,
+                                "interestedCourse"
+                              )}
+
+                            </td>
+
+
+                            <td className="px-6 py-4">
+
+                              {getField(
+                                submission,
+                                "targetTest"
+                              )}
+
+                            </td>
+
+
+                            <td className="px-6 py-4">
+
+                              {formatDate(
+                                submission.submitted_at ||
+                                  submission.created_at
+                              )}
+
+                            </td>
+
+                          </tr>
+
+                        )
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
               )}
 
             </div>
 
-          </div>
+          </>
         )}
 
       </main>
