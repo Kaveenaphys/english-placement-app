@@ -488,6 +488,13 @@ function ResultsPage() {
                   ? "Submitting..."
                   : "Submit Assessment"}
               </button>
+              <button
+  type="button"
+  onClick={handleSubmit}
+  className="mt-4 border border-gray-300 px-6 py-3 font-semibold"
+>
+  Test Submission
+</button>
 
             </>
           ) : (
