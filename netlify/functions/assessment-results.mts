@@ -1,10 +1,44 @@
+import { getUser } from "@netlify/identity";
 import type { Config } from "@netlify/functions";
+
 export default async (req: Request) => {
   if (req.method !== "GET") {
     return new Response(
       JSON.stringify({ error: "Method not allowed" }),
       {
         status: 405,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
+  // Check whether the requester is logged in
+  const user = await getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Authentication required.",
+      }),
+      {
+        status: 401,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
+  // Check whether the logged-in user is an administrator
+  if (!user.roles.includes("admin")) {
+    return new Response(
+      JSON.stringify({
+        error: "Administrator access required.",
+      }),
+      {
+        status: 403,
         headers: {
           "Content-Type": "application/json",
         },
@@ -41,22 +75,22 @@ export default async (req: Request) => {
     );
 
     if (!response.ok) {
-  const errorText = await response.text();
+      const errorText = await response.text();
 
-  return new Response(
-    JSON.stringify({
-      error: "Netlify API request failed.",
-      status: response.status,
-      details: errorText,
-    }),
-    {
-      status: response.status,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      return new Response(
+        JSON.stringify({
+          error: "Netlify API request failed.",
+          status: response.status,
+          details: errorText,
+        }),
+        {
+          status: response.status,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-  );
-}
 
     const submissions = await response.json();
 
