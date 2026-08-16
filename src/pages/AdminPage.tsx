@@ -86,6 +86,26 @@ function AdminPage() {
   ) {
     return submission?.data?.[fieldName] || "—";
   }
+  function getScore(
+  submission: any,
+  section: "grammar" | "reading" | "listening"
+) {
+  const score = getField(
+    submission,
+    `${section}Score`
+  );
+
+  const total = getField(
+    submission,
+    `${section}Total`
+  );
+
+  if (score === "—" || total === "—") {
+    return "—";
+  }
+
+  return `${score}/${total}`;
+}
 
   function formatDate(dateString: string) {
     if (!dateString) {
@@ -100,7 +120,71 @@ function AdminPage() {
 
     return date.toLocaleDateString();
   }
+function exportCSV() {
+  if (results.length === 0) {
+    return;
+  }
 
+  const headers = [
+    "Candidate",
+    "Email",
+    "Phone",
+    "Overall",
+    "Grammar",
+    "Reading",
+    "Listening",
+    "Level",
+    "Course",
+    "Test",
+    "Submitted",
+  ];
+
+  const rows = results.map((submission) => [
+    getField(submission, "candidateName"),
+    getField(submission, "candidateEmail"),
+    getField(submission, "candidatePhone"),
+    getField(submission, "percentage"),
+    getScore(submission, "grammar"),
+    getScore(submission, "reading"),
+    getScore(submission, "listening"),
+    getField(submission, "recommendedLevel"),
+    getField(submission, "interestedCourse"),
+    getField(submission, "targetTest"),
+    formatDate(
+      submission.submitted_at ||
+        submission.created_at
+    ),
+  ]);
+
+  const csv = [
+    headers,
+    ...rows,
+  ]
+    .map((row) =>
+      row
+        .map((value) =>
+          `"${String(value).replace(/"/g, '""')}"`
+        )
+        .join(",")
+    )
+    .join("\n");
+
+  const blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "assessment-results.csv";
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
   if (loading) {
     return (
       <>
@@ -249,16 +333,27 @@ function AdminPage() {
 
                   </div>
 
-                  <button
-                    onClick={loadAssessmentData}
-                    disabled={loadingResults}
-                    className="bg-red-600 text-white px-6 py-3 font-semibold hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {loadingResults
-                      ? "Loading..."
-                      : "Refresh Results"}
-                  </button>
+                  <div className="flex gap-3">
 
+  <button
+    onClick={loadAssessmentData}
+    disabled={loadingResults}
+    className="bg-red-600 text-white px-6 py-3 font-semibold hover:bg-red-700 disabled:opacity-50"
+  >
+    {loadingResults
+      ? "Loading..."
+      : "Refresh Results"}
+  </button>
+
+  <button
+    onClick={exportCSV}
+    disabled={results.length === 0}
+    className="border border-gray-300 px-6 py-3 font-semibold hover:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed"
+  >
+    Export CSV
+  </button>
+
+</div>
                 </div>
 
               </div>
@@ -315,12 +410,24 @@ function AdminPage() {
                         </th>
 
                         <th className="px-6 py-4 font-semibold">
-                          Overall
-                        </th>
+  Overall
+</th>
 
-                        <th className="px-6 py-4 font-semibold">
-                          Level
-                        </th>
+<th className="px-6 py-4 font-semibold">
+  Grammar
+</th>
+
+<th className="px-6 py-4 font-semibold">
+  Reading
+</th>
+
+<th className="px-6 py-4 font-semibold">
+  Listening
+</th>
+
+<th className="px-6 py-4 font-semibold">
+  Level
+</th>
 
                         <th className="px-6 py-4 font-semibold">
                           Course
@@ -372,24 +479,40 @@ function AdminPage() {
                             </td>
 
 
-                            <td className="px-6 py-4 font-semibold">
+                           <td className="px-6 py-4 font-semibold">
+  {getField(
+    submission,
+    "percentage"
+  )}
+</td>
 
-                              {getField(
-                                submission,
-                                "percentage"
-                              )}
+<td className="px-6 py-4">
+  {getScore(
+    submission,
+    "grammar"
+  )}
+</td>
 
-                            </td>
+<td className="px-6 py-4">
+  {getScore(
+    submission,
+    "reading"
+  )}
+</td>
 
+<td className="px-6 py-4">
+  {getScore(
+    submission,
+    "listening"
+  )}
+</td>
 
-                            <td className="px-6 py-4">
-
-                              {getField(
-                                submission,
-                                "recommendedLevel"
-                              )}
-
-                            </td>
+<td className="px-6 py-4">
+  {getField(
+    submission,
+    "recommendedLevel"
+  )}
+</td>
 
 
                             <td className="px-6 py-4">
