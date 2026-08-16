@@ -15,9 +15,8 @@ function AdminPage() {
 
   useEffect(() => {
     netlifyIdentity.init({
-      APIUrl:
-        "https://peaceful-fenglisu-53952e.netlify.app/.netlify/identity",
-    });
+APIUrl:
+  "https://excellence-english-test.netlify.app/.netlify/identity",    });
 
     const currentUser = netlifyIdentity.currentUser();
 
