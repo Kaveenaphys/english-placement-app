@@ -103,6 +103,97 @@ function ResultsPage() {
 
     return "A1 — Beginner";
   }
+  const hasSpecificTest =
+  targetTest &&
+  targetTest.toLowerCase() !== "none" &&
+  targetTest.toLowerCase() !== "not-sure";
+ function getRecommendation() {
+  const grammarPercent =
+    grammarTotal > 0
+      ? (grammarScore / grammarTotal) * 100
+      : 0;
+
+  const readingPercent =
+    readingTotal > 0
+      ? (readingScore / readingTotal) * 100
+      : 0;
+
+  const listeningPercent =
+    listeningTotal > 0
+      ? (listeningScore / listeningTotal) * 100
+      : 0;
+
+  // Find the weakest skill
+  const skillScores = [
+    { name: "Grammar", score: grammarPercent },
+    { name: "Reading", score: readingPercent },
+    { name: "Listening", score: listeningPercent },
+  ];
+
+  const weakestSkill = skillScores.reduce((weakest, current) =>
+    current.score < weakest.score ? current : weakest
+  );
+
+  // General English
+  if (percentage < 60) {
+    return {
+      course: "General English",
+      test: "Not yet recommended",
+      title: "Build Your English Foundation",
+      message:
+        "Your assessment shows that you would benefit from strengthening your general English skills before beginning intensive exam preparation.",
+      focus: `We recommend focusing especially on ${weakestSkill.name}.`,
+    };
+  }
+
+  // Intermediate preparation
+  if (percentage < 75) {
+    return {
+      course: "General English — Intermediate / Upper-Intermediate",
+      test: "Exam preparation after further English development",
+      title: "Strengthen Your English Before Exam Preparation",
+      message:
+        "You have a developing intermediate-to-upper-intermediate level of English. A stronger general English foundation will help you perform more confidently in an English-language examination.",
+      focus: `We recommend focusing especially on ${weakestSkill.name}.`,
+    };
+  }
+
+  // Strong enough for exam preparation
+  if (percentage < 85) {
+    return {
+      course: hasSpecificTest
+        ? `${targetTest} Preparation — Foundation`
+        : "English Exam Preparation",
+
+      test: hasSpecificTest
+        ? `${targetTest} Preparation`
+        : "IELTS / PTE / OET Preparation",
+
+      title: "Ready to Begin Exam Preparation",
+      message:
+        "Your English level is suitable for beginning structured examination preparation. Building exam-specific skills can now help you improve your performance.",
+      focus: `We recommend focusing especially on ${weakestSkill.name}.`,
+    };
+  }
+
+  // High readiness
+  return {
+    course: hasSpecificTest
+      ? `${targetTest} Preparation`
+      : "English Exam Preparation",
+
+    test: hasSpecificTest
+      ? `${targetTest} Preparation`
+      : "IELTS / PTE / OET Preparation",
+
+    title: "Strong Foundation for Exam Preparation",
+    message:
+      "Your assessment indicates a strong level of English and good readiness for examination-focused preparation.",
+
+    focus: `We recommend focusing especially on ${weakestSkill.name}.`,
+  };
+}
+const recommendation = getRecommendation();
 
 
   // -------------------------
@@ -187,7 +278,30 @@ function ResultsPage() {
       "recommendedLevel",
       getLevel()
     );
+formData.append(
+  "recommendedCourse",
+  recommendation.course
+);
 
+formData.append(
+  "recommendedTest",
+  recommendation.test
+);
+
+formData.append(
+  "recommendationTitle",
+  recommendation.title
+);
+
+formData.append(
+  "recommendationMessage",
+  recommendation.message
+);
+
+formData.append(
+  "recommendationFocus",
+  recommendation.focus
+);
     formData.append(
       "submittedAt",
       new Date().toISOString()
@@ -434,80 +548,82 @@ function ResultsPage() {
         </div>
 
 
+       {/* =========================
+    Recommendation
+========================= */}
+
+<div className="border border-gray-200 bg-gray-50 p-8 mb-8">
+
+  <p className="text-red-600 font-semibold">
+    Recommended Path
+  </p>
+
+  <h2 className="text-3xl font-bold text-black mt-2">
+    {recommendation.title}
+  </h2>
+
+  <p className="text-gray-700 mt-4 leading-7">
+    {recommendation.message}
+  </p>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+
+    <div className="bg-white border border-gray-200 p-6">
+      <p className="text-sm text-gray-500">
+        Recommended Course
+      </p>
+
+      <p className="text-xl font-bold text-black mt-2">
+        {recommendation.course}
+      </p>
+    </div>
+
+    <div className="bg-white border border-gray-200 p-6">
+      <p className="text-sm text-gray-500">
+        Recommended Test
+      </p>
+
+      <p className="text-xl font-bold text-black mt-2">
+        {recommendation.test}
+      </p>
+    </div>
+
+  </div>
+
+  <div className="mt-6">
+    <p className="text-sm text-gray-500">
+      Your English Level
+    </p>
+
+    <p className="text-xl font-bold text-red-600 mt-1">
+      {getLevel()}
+    </p>
+  </div>
+
+  <div className="mt-6 bg-white border border-gray-200 p-5">
+    <p className="font-semibold text-black">
+      Areas to focus on
+    </p>
+
+    <p className="text-gray-600 mt-2">
+      {recommendation.focus}
+    </p>
+  </div>
+
+</div>
+
         {/* =========================
-            Recommendation
+            Submit Button
         ========================= */}
 
-        <div className="border border-gray-200 bg-gray-50 p-8 mb-8">
-
-          <h2 className="text-2xl font-bold text-black">
-            Recommended Level
-          </h2>
-
-          <p className="text-gray-700 mt-3 leading-7">
-            Based on your performance across Grammar,
-            Reading, and Listening, your current estimated
-            English level is:
-          </p>
-
-          <p className="text-xl font-bold text-red-600 mt-4">
-            {getLevel()}
-          </p>
-
-        </div>
-
-
-        {/* =========================
-            Final Submission
-        ========================= */}
-
-        <div className="border border-gray-200 p-8 text-center">
-
-          {!submitted ? (
-            <>
-
-              <h2 className="text-2xl font-bold text-black">
-                Submit Your Assessment
-              </h2>
-
-              <p className="text-gray-600 mt-3 mb-6">
-                Submit your results so that we can keep
-                a record of your assessment.
-              </p>
-
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="bg-red-600 hover:bg-red-700
-                           disabled:bg-gray-300
-                           disabled:cursor-not-allowed
-                           text-white px-8 py-3
-                           font-semibold"
-              >
-                {submitting
-                  ? "Submitting..."
-                  : "Submit Assessment"}
-              </button>
-              
-
-            </>
-          ) : (
-
-            <>
-
-              <h2 className="text-2xl font-bold text-black">
-                Assessment Submitted
-              </h2>
-
-              <p className="text-gray-600 mt-3">
-                Thank you. Your assessment has been
-                successfully submitted.
-              </p>
-
-            </>
-
-          )}
-
+        <div className="text-center">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || submitted}
+            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded transition"
+          >
+            {submitted ? "✓ Submitted" : submitting ? "Submitting..." : "Submit Results"}
+          </button>
         </div>
 
       </main>

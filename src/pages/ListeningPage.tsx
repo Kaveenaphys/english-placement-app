@@ -38,7 +38,45 @@ useEffect(() => {
   if (timeLeft <= 0) {
     handleSubmit();
     return;
-  }
+  }{/* =========================
+    Navigation
+========================= */}
+
+{!showPartComplete && (
+
+  <div className="flex justify-between mt-8">
+
+    <button
+      onClick={handlePrevious}
+      disabled={currentQuestion === 0}
+      className="border border-gray-300
+                 px-6 py-3 font-semibold
+                 disabled:text-gray-300
+                 disabled:cursor-not-allowed
+                 hover:border-red-600"
+    >
+      Previous
+    </button>
+
+    <button
+      onClick={handleNext}
+      disabled={
+        currentQuestion ===
+        listeningQuestions.length - 1
+      }
+      className="bg-red-600
+                 hover:bg-red-700
+                 disabled:bg-gray-300
+                 disabled:cursor-not-allowed
+                 text-white px-6 py-3
+                 font-semibold"
+    >
+      Next
+    </button>
+
+  </div>
+
+)}
 
   const timer = setInterval(() => {
     setTimeLeft((previousTime) => previousTime - 1);
@@ -429,52 +467,54 @@ function handleAnswerSelect(answer: string) {
         )}
 
 
-        {/* =========================
-            Navigation
-        ========================= */}
+{/* =========================
+    Navigation
+========================= */}
 
-        {!showPartComplete && (
+{!showPartComplete && (
 
-          <div className="flex justify-between mt-8">
+  <div className="flex justify-between mt-8">
 
+    <button
+      onClick={handlePrevious}
+      disabled={currentQuestion === 0}
+      className="border border-gray-300
+                 px-6 py-3 font-semibold
+                 disabled:text-gray-300
+                 disabled:cursor-not-allowed
+                 hover:border-red-600"
+    >
+      Previous
+    </button>
 
-            <button
-              onClick={handlePrevious}
-              disabled={currentQuestion === 0}
-              className="border border-gray-300
-                         px-6 py-3 font-semibold
-                         disabled:text-gray-300
-                         disabled:cursor-not-allowed
-                         hover:border-red-600"
-            >
+    {currentQuestion < listeningQuestions.length - 1 ? (
+      <button
+        onClick={handleNext}
+        disabled={!selectedAnswer}
+        className="bg-red-600
+                   hover:bg-red-700
+                   disabled:bg-gray-300
+                   disabled:cursor-not-allowed
+                   text-white px-6 py-3
+                   font-semibold"
+      >
+        Next
+      </button>
+    ) : (
+      <button
+        onClick={handleSubmit}
+        className="bg-red-600
+                   hover:bg-red-700
+                   text-white px-6 py-3
+                   font-semibold"
+      >
+        Continue to Results
+      </button>
+    )}
 
-              Previous
+  </div>
 
-            </button>
-
-
-            <button
-              onClick={handleNext}
-              disabled={
-                currentQuestion ===
-                listeningQuestions.length - 1
-              }
-              className="bg-red-600
-                         hover:bg-red-700
-                         disabled:bg-gray-300
-                         disabled:cursor-not-allowed
-                         text-white px-6 py-3
-                         font-semibold"
-            >
-
-              Next
-
-            </button>
-
-          </div>
-
-        )}
-
+)}
       </main>
     </>
   );
