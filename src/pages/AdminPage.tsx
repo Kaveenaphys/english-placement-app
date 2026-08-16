@@ -169,10 +169,9 @@ function exportCSV() {
     )
     .join("\n");
 
-  const blob = new Blob([csv], {
-    type: "text/csv;charset=utf-8;",
-  });
-
+ const blob = new Blob(["\uFEFF" + csv], {
+  type: "text/csv;charset=utf-8;",
+});
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement("a");
