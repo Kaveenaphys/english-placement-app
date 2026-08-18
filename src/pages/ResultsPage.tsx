@@ -373,21 +373,21 @@ formData.append(
             Overall Result
         ========================= */}
 
-        <div className="border border-gray-200 p-8 text-center mb-8">
+        {/* =========================
+    Results Summary
+========================= */}
 
-          <p className="text-gray-600">
-            Overall Score
-          </p>
+<div className="border border-gray-200 p-8 text-center mb-8">
 
-          <p className="text-6xl font-bold text-red-600 mt-2">
-            {percentage}%
-          </p>
+  <h2 className="text-2xl font-bold text-black">
+    Your Results
+  </h2>
 
-          <p className="text-2xl font-semibold text-black mt-4">
-            {getLevel()}
-          </p>
+  <p className="text-gray-600 mt-3">
+    Your percentage scores for each section are shown below.
+  </p>
 
-        </div>
+</div>
 
 
         {/* =========================
@@ -548,69 +548,6 @@ formData.append(
         </div>
 
 
-       {/* =========================
-    Recommendation
-========================= */}
-
-<div className="border border-gray-200 bg-gray-50 p-8 mb-8">
-
-  <p className="text-red-600 font-semibold">
-    Recommended Path
-  </p>
-
-  <h2 className="text-3xl font-bold text-black mt-2">
-    {recommendation.title}
-  </h2>
-
-  <p className="text-gray-700 mt-4 leading-7">
-    {recommendation.message}
-  </p>
-
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-
-    <div className="bg-white border border-gray-200 p-6">
-      <p className="text-sm text-gray-500">
-        Recommended Course
-      </p>
-
-      <p className="text-xl font-bold text-black mt-2">
-        {recommendation.course}
-      </p>
-    </div>
-
-    <div className="bg-white border border-gray-200 p-6">
-      <p className="text-sm text-gray-500">
-        Recommended Test
-      </p>
-
-      <p className="text-xl font-bold text-black mt-2">
-        {recommendation.test}
-      </p>
-    </div>
-
-  </div>
-
-  <div className="mt-6">
-    <p className="text-sm text-gray-500">
-      Your English Level
-    </p>
-
-    <p className="text-xl font-bold text-red-600 mt-1">
-      {getLevel()}
-    </p>
-  </div>
-
-  <div className="mt-6 bg-white border border-gray-200 p-5">
-    <p className="font-semibold text-black">
-      Areas to focus on
-    </p>
-
-    <p className="text-gray-600 mt-2">
-      {recommendation.focus}
-    </p>
-  </div>
-
-</div>
 
         {/* =========================
             Submit Button
